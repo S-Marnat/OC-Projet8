@@ -75,9 +75,17 @@ public class TourGuideService : ITourGuideService
     public List<Provider> GetTripDeals(User user)
     {
         int cumulativeRewardPoints = user.UserRewards.Sum(i => i.RewardPoints);
-        List<Provider> providers = _tripPricer.GetPrice(TripPricerApiKey, user.UserId,
-            user.UserPreferences.NumberOfAdults, user.UserPreferences.NumberOfChildren,
-            user.UserPreferences.TripDuration, cumulativeRewardPoints);
+
+        var providers = new List<Provider>();
+
+        // Retourner 10 providers = TripPricer ne pouvant en retourner que 5, on duplique la récupération des providers pour en avoir 10
+        for (var i = 0; i < 2; i++)
+        {
+            providers.AddRange(_tripPricer.GetPrice(TripPricerApiKey, user.UserId,
+                user.UserPreferences.NumberOfAdults, user.UserPreferences.NumberOfChildren,
+                user.UserPreferences.TripDuration, cumulativeRewardPoints));
+        }
+        
         user.TripDeals = providers;
         return providers;
     }
