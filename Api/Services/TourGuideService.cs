@@ -1,5 +1,7 @@
 ﻿using GpsUtil.Location;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.Extensions.Logging;
+using RewardCentral;
 using System.Diagnostics;
 using System.Globalization;
 using TourGuide.LibrairiesWrappers.Interfaces;
@@ -15,18 +17,20 @@ public class TourGuideService : ITourGuideService
     private readonly ILogger _logger;
     private readonly IGpsUtil _gpsUtil;
     private readonly IRewardsService _rewardsService;
+    private readonly IRewardCentral _rewardsCentral;
     private readonly TripPricer.TripPricer _tripPricer;
     public Tracker Tracker { get; private set; }
     private readonly Dictionary<string, User> _internalUserMap = new();
     private const string TripPricerApiKey = "test-server-api-key";
     private bool _testMode = true;
 
-    public TourGuideService(ILogger<TourGuideService> logger, IGpsUtil gpsUtil, IRewardsService rewardsService, ILoggerFactory loggerFactory)
+    public TourGuideService(ILogger<TourGuideService> logger, IGpsUtil gpsUtil, IRewardsService rewardsService, IRewardCentral rewardCentral, ILoggerFactory loggerFactory)
     {
         _logger = logger;
         _tripPricer = new();
         _gpsUtil = gpsUtil;
         _rewardsService = rewardsService;
+        _rewardsCentral = rewardCentral;
 
         CultureInfo.CurrentCulture = new CultureInfo("en-US");
 
@@ -85,7 +89,7 @@ public class TourGuideService : ITourGuideService
                 user.UserPreferences.NumberOfAdults, user.UserPreferences.NumberOfChildren,
                 user.UserPreferences.TripDuration, cumulativeRewardPoints));
         }
-        
+
         user.TripDeals = providers;
         return providers;
     }
@@ -125,6 +129,28 @@ public class TourGuideService : ITourGuideService
         }
 
         return nearbyAttractions;
+    }
+
+    public object CreateAttractionJsonObject(List<Attraction> attractions, VisitedLocation visitedLocation)
+    {
+        var jsonObject = new List<Object[]>();
+
+        foreach (var attraction in attractions)
+        {
+            double distance = _rewardsService.GetDistance(visitedLocation.Location, attraction);
+            int pointsRecompense = _rewardsCentral.GetAttractionRewardPoints(attraction.AttractionId, visitedLocation.UserId);
+
+            jsonObject.Add(new object[]
+            {
+                $"Attraction : {attraction.AttractionName}",
+                $"Coordonnées de l'attraction : {attraction.Latitude}/{attraction.Longitude}",
+                $"Coordonnées de l'utilisateur : {visitedLocation.Location.Latitude}/{visitedLocation.Location.Longitude}",
+                $"Distance entre l'emplacement de l'utilisateur et l'attraction : {distance} miles",
+                $"Points de récompense : {pointsRecompense} points"
+            });
+        };
+
+        return jsonObject;
     }
 
     private void AddShutDownHook()

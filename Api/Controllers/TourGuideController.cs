@@ -38,7 +38,8 @@ public class TourGuideController : ControllerBase
     {
         var visitedLocation = _tourGuideService.GetUserLocation(GetUser(userName));
         var attractions = _tourGuideService.GetNearByAttractions(visitedLocation);
-        return Ok(attractions);
+        var json = _tourGuideService.CreateAttractionJsonObject(attractions, visitedLocation);
+        return Ok(json);
     }
 
     [HttpGet("getRewards")]
@@ -54,6 +55,13 @@ public class TourGuideController : ControllerBase
         var deals = _tourGuideService.GetTripDeals(GetUser(userName));
         return Ok(deals);
     }
+
+    //[HttpGet("users")]
+    //public IActionResult GetUsers()
+    //{
+    //    return Ok(_tourGuideService.GetAllUsers());
+    //}
+
 
     private User GetUser(string userName)
     {
