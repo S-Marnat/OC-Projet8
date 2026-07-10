@@ -100,13 +100,28 @@ public class TourGuideService : ITourGuideService
 
     public List<Attraction> GetNearByAttractions(VisitedLocation visitedLocation)
     {
-        List<Attraction> nearbyAttractions = new ();
+        // Récupérer la distance entre la position de l'utilisateur et les attractions
+        var allAttractions = new List<Object[]>();
+
         foreach (var attraction in _gpsUtil.GetAttractions())
         {
-            if (_rewardsService.IsWithinAttractionProximity(attraction, visitedLocation.Location))
+            double distance = _rewardsService.GetDistance(visitedLocation.Location, attraction);
+
+            allAttractions.Add(new object[]
             {
-                nearbyAttractions.Add(attraction);
-            }
+                attraction,
+                distance
+            });
+        }
+
+        // Trier les attractions par distance et prendre les 5 plus proches
+        var tri = allAttractions.OrderBy(aa => (double)aa[1]).Take(5).ToList();
+
+        // Renvoyer la liste des 5 attractions les plus proches
+        List<Attraction> nearbyAttractions = new();
+        foreach (var attraction in tri)
+        {
+            nearbyAttractions.Add((Attraction)attraction[0]);
         }
 
         return nearbyAttractions;

@@ -71,14 +71,17 @@ public class RewardsService : IRewardsService
 
     public double GetDistance(Locations loc1, Locations loc2)
     {
+        // Conversion des degrés aux radians
         double lat1 = Math.PI * loc1.Latitude / 180.0;
         double lon1 = Math.PI * loc1.Longitude / 180.0;
         double lat2 = Math.PI * loc2.Latitude / 180.0;
         double lon2 = Math.PI * loc2.Longitude / 180.0;
 
+        // Formule du cosinus sphérique pour calculer la distance entre deux points sur une sphère
         double angle = Math.Acos(Math.Sin(lat1) * Math.Sin(lat2)
                                 + Math.Cos(lat1) * Math.Cos(lat2) * Math.Cos(lon1 - lon2));
 
+        // Conversion de l'angle en milles nautiques, puis en milles terrestres
         double nauticalMiles = 60.0 * angle * 180.0 / Math.PI;
         return StatuteMilesPerNauticalMile * nauticalMiles;
     }
