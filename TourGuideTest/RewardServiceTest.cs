@@ -19,37 +19,39 @@ public class RewardServiceTest : IClassFixture<DependencyFixture>
     }
 
     [Fact]
-    public void UserGetRewards()
+    public async Task UserGetRewardsAsync()
     {
         _fixture.Initialize(0);
         var user = new User(Guid.NewGuid(), "jon", "000", "jon@tourGuide.com");
-        var attraction = _fixture.GpsUtil.GetAttractions().First();
+        var attractions = await _fixture.GpsUtil.GetAttractionsAsync();
+        var attraction = attractions.First();
         user.AddToVisitedLocations(new VisitedLocation(user.UserId, attraction, DateTime.Now));
-        _fixture.TourGuideService.TrackUserLocation(user);
+        await _fixture.TourGuideService.TrackUserLocationAsync(user);
         var userRewards = user.UserRewards;
         _fixture.TourGuideService.Tracker.StopTracking();
         Assert.True(userRewards.Count == 1);
     }
 
     [Fact]
-    public void IsWithinAttractionProximity()
+    public async Task IsWithinAttractionProximityAsync()
     {
-        var attraction = _fixture.GpsUtil.GetAttractions().First();
+        var attractions = await _fixture.GpsUtil.GetAttractionsAsync();
+        var attraction = attractions.First();
         Assert.True(_fixture.RewardsService.IsWithinAttractionProximity(attraction, attraction));
     }
 
     [Fact]
-    public void NearAllAttractions()
+    public async Task NearAllAttractionsAsync()
     {
         _fixture.Initialize(1);
         _fixture.RewardsService.SetProximityBuffer(int.MaxValue);
 
         var user = _fixture.TourGuideService.GetAllUsers().First();
-        _fixture.RewardsService.CalculateRewards(user);
+        await _fixture.RewardsService.CalculateRewardsAsync(user);
         var userRewards = _fixture.TourGuideService.GetUserRewards(user);
         _fixture.TourGuideService.Tracker.StopTracking();
 
-        Assert.Equal(_fixture.GpsUtil.GetAttractions().Count, userRewards.Count);
+        var attractions = await _fixture.GpsUtil.GetAttractionsAsync();
+        Assert.Equal(attractions.Count, userRewards.Count);
     }
-
 }
