@@ -53,9 +53,10 @@ public class TourGuideService : ITourGuideService
         return user.UserRewards;
     }
 
-    public VisitedLocation GetUserLocation(User user)
+    public async Task<VisitedLocation> GetUserLocationAsync(User user)
     {
-        return user.VisitedLocations.Any() ? user.GetLastVisitedLocation() : TrackUserLocation(user);
+        VisitedLocation userLocation = await TrackUserLocationAsync(user);
+        return user.VisitedLocations.Any() ? user.GetLastVisitedLocation() : userLocation;
     }
 
     public User GetUser(string userName)
@@ -94,20 +95,21 @@ public class TourGuideService : ITourGuideService
         return providers;
     }
 
-    public VisitedLocation TrackUserLocation(User user)
+    public async Task<VisitedLocation> TrackUserLocationAsync(User user)
     {
-        VisitedLocation visitedLocation = _gpsUtil.GetUserLocation(user.UserId);
+        VisitedLocation visitedLocation = await _gpsUtil.GetUserLocationAsync(user.UserId);
         user.AddToVisitedLocations(visitedLocation);
-        _rewardsService.CalculateRewards(user);
+        await _rewardsService.CalculateRewardsAsync(user);
         return visitedLocation;
     }
 
-    public List<Attraction> GetNearByAttractions(VisitedLocation visitedLocation)
+    public async Task<List<Attraction>> GetNearByAttractionsAsync(VisitedLocation visitedLocation)
     {
         // Récupérer la distance entre la position de l'utilisateur et les attractions
+        List<Attraction> attractions = await _gpsUtil.GetAttractionsAsync();
         var allAttractions = new List<Object[]>();
 
-        foreach (var attraction in _gpsUtil.GetAttractions())
+        foreach (var attraction in attractions)
         {
             double distance = _rewardsService.GetDistance(visitedLocation.Location, attraction);
 
@@ -131,14 +133,14 @@ public class TourGuideService : ITourGuideService
         return nearbyAttractions;
     }
 
-    public object CreateAttractionJsonObject(List<Attraction> attractions, VisitedLocation visitedLocation)
+    public async Task<object> CreateAttractionJsonObjectAsync(List<Attraction> attractions, VisitedLocation visitedLocation)
     {
         var jsonObject = new List<Object[]>();
 
         foreach (var attraction in attractions)
         {
             double distance = _rewardsService.GetDistance(visitedLocation.Location, attraction);
-            int pointsRecompense = _rewardsCentral.GetAttractionRewardPoints(attraction.AttractionId, visitedLocation.UserId);
+            int pointsRecompense = await _rewardsCentral.GetAttractionRewardPointsAsync(attraction.AttractionId, visitedLocation.UserId);
 
             jsonObject.Add(new object[]
             {
