@@ -12,13 +12,13 @@ public class GpsUtilWrapper : IGpsUtil
         _gpsUtil = new();
     }
 
-    public VisitedLocation GetUserLocation(Guid userId)
+    public async Task<VisitedLocation> GetUserLocationAsync(Guid userId)
     {
-        return _gpsUtil.GetUserLocation(userId);
+        return await Task.Run(() => _gpsUtil.GetUserLocation(userId));
     }
 
-    public List<Attraction> GetAttractions()
+    public async Task<List<Attraction>> GetAttractionsAsync()
     {
-        return _gpsUtil.GetAttractions();
+        return await Task.Run(() => _gpsUtil.GetAttractions());
     }
 }
