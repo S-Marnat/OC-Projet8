@@ -1,4 +1,5 @@
 ﻿using GpsUtil.Location;
+using RewardCentral;
 using TourGuide.LibrairiesWrappers.Interfaces;
 using TourGuide.Services.Interfaces;
 using TourGuide.Users;
@@ -32,7 +33,7 @@ public class RewardsService : IRewardsService
         _proximityBuffer = _defaultProximityBuffer;
     }
 
-    public void CalculateRewards(User user)
+    public async Task CalculateRewardsAsync(User user)
     {
         count++;
 
@@ -40,7 +41,7 @@ public class RewardsService : IRewardsService
         // Liste des positions où l'utilisateur a été
         List<VisitedLocation> userLocations = user.VisitedLocations.ToList();
         // Liste des attractions disponibles
-        List<Attraction> attractions = _gpsUtil.GetAttractions().ToList();
+        List<Attraction> attractions = await _gpsUtil.GetAttractionsAsync();
 
         // Comparer chaque position visitée avec chaque attraction
         foreach (var visitedLocation in userLocations)
@@ -54,7 +55,8 @@ public class RewardsService : IRewardsService
                     if (NearAttraction(visitedLocation, attraction))
                     {
                         // Ajouter une récompense pour l'utilisateur
-                        user.AddUserReward(new UserReward(visitedLocation, attraction, GetRewardPoints(attraction, user)));
+                        var points = await GetRewardPointsAsync(attraction, user);
+                        user.AddUserReward(new UserReward(visitedLocation, attraction, points));
                     }
                 }
             }
@@ -72,9 +74,9 @@ public class RewardsService : IRewardsService
         return GetDistance(attraction, visitedLocation.Location) <= _proximityBuffer;
     }
 
-    private int GetRewardPoints(Attraction attraction, User user)
+    private async Task<int> GetRewardPointsAsync(Attraction attraction, User user)
     {
-        return _rewardsCentral.GetAttractionRewardPoints(attraction.AttractionId, user.UserId);
+        return await _rewardsCentral.GetAttractionRewardPointsAsync(attraction.AttractionId, user.UserId);
     }
 
     public double GetDistance(Locations loc1, Locations loc2)
