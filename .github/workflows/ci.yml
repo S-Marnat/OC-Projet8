@@ -10,6 +10,8 @@ on:
 
 # Définition des jobs
 jobs:
+
+  # Compilation
   build:
 
     # Spécifie l'environnement d'exécution (runner)
@@ -35,6 +37,27 @@ jobs:
     - name: Build
       run: dotnet build --no-restore
 
+  # Tests
+  test:
+
+    # Spécifie l'environnement d'exécution (runner)
+    runs-on: ubuntu-latest
+
+    # Précision de la dépendance entre les jobs (le job "test" dépend du job "build")
+    needs: build
+
+    # Définition des étapes du job
+    steps:
+
+    # Récupération du code source du dépôt
+    - uses: actions/checkout@v4
+  
+    # Installation du SDK .NET
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: 7.0.x
+    
     # Exécution des tests unitaires (sans compilation car déjà faite et avec un affichage standard)
     - name: Test
       run: dotnet test --no-build --verbosity normal
