@@ -3,10 +3,11 @@ name: CI
 
 # Déclencheurs du workflow
 on:
+  workflow_dispatch:
   push:
-    branches: [ "master" ]
+    branches: [ "S-Marnat-ci" ]
   pull_request:
-    branches: [ "master" ]
+    branches: [ "S-Marnat-ci" ]
 
 # Définition des jobs
 jobs:
