@@ -4,9 +4,9 @@ name: CI
 # Déclencheurs du workflow
 on:
   push:
-    branches: [ "S-Marnat-ci" ]
+    branches: [ "master" ]
   pull_request:
-    branches: [ "S-Marnat-ci" ]
+    branches: [ "master" ]
 
 # Définition des jobs
 jobs:
