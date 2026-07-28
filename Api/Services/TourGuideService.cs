@@ -79,7 +79,7 @@ public class TourGuideService : ITourGuideService
 
         var providers = new List<Provider>();
 
-        // Retourner 10 providers = TripPricer ne pouvant en retourner que 5, on duplique la récupération des providers pour en avoir 10
+        // TripPricer ne pouvant en retourner que 5, on duplique la récupération des providers pour en avoir 10
         for (var i = 0; i < 2; i++)
         {
             providers.AddRange(_tripPricer.GetPrice(TripPricerApiKey, user.UserId,
@@ -101,7 +101,6 @@ public class TourGuideService : ITourGuideService
 
     public async Task<List<Attraction>> GetNearByAttractionsAsync(VisitedLocation visitedLocation)
     {
-        // Récupérer la distance entre la position de l'utilisateur et les attractions
         List<Attraction> attractions = await _gpsUtil.GetAttractionsAsync();
         var allAttractions = new List<Object[]>();
 
@@ -116,10 +115,8 @@ public class TourGuideService : ITourGuideService
             });
         }
 
-        // Trier les attractions par distance et prendre les 5 plus proches
         var tri = allAttractions.OrderBy(aa => (double)aa[1]).Take(5).ToList();
 
-        // Renvoyer la liste des 5 attractions les plus proches
         List<Attraction> nearbyAttractions = new();
         foreach (var attraction in tri)
         {

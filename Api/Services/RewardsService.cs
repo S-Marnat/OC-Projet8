@@ -37,23 +37,17 @@ public class RewardsService : IRewardsService
         count++;
 
         // Copier les collections pour éviter les modifications concurrentes
-        // Liste des positions où l'utilisateur a été
         List<VisitedLocation> userLocations = user.VisitedLocations.ToList();
-        // Liste des attractions disponibles
         List<Attraction> attractions = await _gpsUtil.GetAttractionsAsync();
 
-        // Comparer chaque position visitée avec chaque attraction
         foreach (var visitedLocation in userLocations)
         {
             foreach (var attraction in attractions)
             {
-                // Vérifier si l'utilisateur n'a pas déjà reçu de récompense pour cette attraction
                 if (!user.UserRewards.Any(r => r.Attraction.AttractionName == attraction.AttractionName))
                 {
-                    // Vérifier si l'utilisateur est proche de l'attraction
                     if (NearAttraction(visitedLocation, attraction))
                     {
-                        // Ajouter une récompense pour l'utilisateur
                         var points = await GetRewardPointsAsync(attraction, user);
                         user.AddUserReward(new UserReward(visitedLocation, attraction, points));
                     }
@@ -80,17 +74,14 @@ public class RewardsService : IRewardsService
 
     public double GetDistance(Locations loc1, Locations loc2)
     {
-        // Conversion des degrés aux radians
         double lat1 = Math.PI * loc1.Latitude / 180.0;
         double lon1 = Math.PI * loc1.Longitude / 180.0;
         double lat2 = Math.PI * loc2.Latitude / 180.0;
         double lon2 = Math.PI * loc2.Longitude / 180.0;
 
-        // Formule du cosinus sphérique pour calculer la distance entre deux points sur une sphère
         double angle = Math.Acos(Math.Sin(lat1) * Math.Sin(lat2)
                                 + Math.Cos(lat1) * Math.Cos(lat2) * Math.Cos(lon1 - lon2));
 
-        // Conversion de l'angle en milles nautiques, puis en milles terrestres
         double nauticalMiles = 60.0 * angle * 180.0 / Math.PI;
         return StatuteMilesPerNauticalMile * nauticalMiles;
     }

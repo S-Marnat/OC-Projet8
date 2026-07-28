@@ -47,13 +47,6 @@ public class TourGuideController : ControllerBase
         return Ok(deals);
     }
 
-    // Récupérer un user pour tester l'API
-    //[HttpGet("users")]
-    //public IActionResult GetUsers()
-    //{
-    //    return Ok(_tourGuideService.GetAllUsers());
-    //}
-
 
     private User GetUser(string userName)
     {
