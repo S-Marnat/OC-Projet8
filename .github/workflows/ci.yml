@@ -68,8 +68,8 @@ jobs:
     # Spécifie l'environnement d'exécution (runner)
     runs-on: ubuntu-latest
 
-    # Précision de la dépendance entre les jobs (le job "artefact" dépend du job "build")
-    needs: build
+    # Précision de la dépendance entre les jobs (le job "artefact" dépend des jobs "build" et "test")
+    needs: [build, test]
 
     # Définition des étapes du job
     steps:
